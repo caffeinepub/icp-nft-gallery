@@ -1,0 +1,120 @@
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=Satoshi:wght@300;400;500;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+
+    /* Backgrounds */
+    --background: 0.1 0.005 260;
+    --foreground: 0.94 0.008 80;
+
+    --card: 0.14 0.008 260;
+    --card-foreground: 0.94 0.008 80;
+
+    --popover: 0.13 0.008 260;
+    --popover-foreground: 0.94 0.008 80;
+
+    /* Gold accent */
+    --primary: 0.78 0.14 75;
+    --primary-foreground: 0.1 0.005 260;
+
+    --secondary: 0.2 0.01 260;
+    --secondary-foreground: 0.8 0.008 80;
+
+    --muted: 0.19 0.008 260;
+    --muted-foreground: 0.55 0.01 260;
+
+    --accent: 0.78 0.14 75;
+    --accent-foreground: 0.1 0.005 260;
+
+    --destructive: 0.55 0.22 25;
+    --destructive-foreground: 0.98 0.005 80;
+
+    --border: 0.22 0.01 260;
+    --input: 0.2 0.01 260;
+    --ring: 0.78 0.14 75;
+
+    --radius: 0.5rem;
+
+    --chart-1: 0.78 0.14 75;
+    --chart-2: 0.65 0.12 180;
+    --chart-3: 0.6 0.15 30;
+    --chart-4: 0.7 0.1 300;
+    --chart-5: 0.55 0.12 150;
+
+    --sidebar: 0.12 0.008 260;
+    --sidebar-foreground: 0.94 0.008 80;
+    --sidebar-primary: 0.78 0.14 75;
+    --sidebar-primary-foreground: 0.1 0.005 260;
+    --sidebar-accent: 0.2 0.01 260;
+    --sidebar-accent-foreground: 0.8 0.008 80;
+    --sidebar-border: 0.22 0.01 260;
+    --sidebar-ring: 0.78 0.14 75;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: "Satoshi", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Bricolage Grotesque", sans-serif;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: "Bricolage Grotesque", sans-serif;
+  }
+
+  .text-gold {
+    color: oklch(var(--primary));
+  }
+
+  .bg-gold {
+    background-color: oklch(var(--primary));
+  }
+
+  .gold-shimmer {
+    background: linear-gradient(
+      135deg,
+      oklch(var(--card)) 0%,
+      oklch(0.17 0.01 260) 50%,
+      oklch(var(--card)) 100%
+    );
+  }
+
+  .nft-card-hover {
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s
+      ease;
+  }
+
+  .nft-card-hover:hover {
+    transform: translateY(-3px);
+    border-color: oklch(var(--primary) / 0.5);
+    box-shadow: 0 8px 32px oklch(var(--primary) / 0.08), 0 2px 8px
+      oklch(0 0 0 / 0.4);
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: oklch(var(--border)) transparent;
+  }
+}
