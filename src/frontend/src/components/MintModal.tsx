@@ -20,15 +20,15 @@ interface MintModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
+type MintStatus = "idle" | "uploading" | "minting" | "success" | "error";
+
 export default function MintModal({ open, onOpenChange }: MintModalProps) {
   const [dragOver, setDragOver] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [status, setStatus] = useState<
-    "idle" | "uploading" | "minting" | "success" | "error"
-  >("idle");
+  const [status, setStatus] = useState<MintStatus>("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -70,16 +70,21 @@ export default function MintModal({ open, onOpenChange }: MintModalProps) {
 
   const handleMint = async () => {
     if (!selectedFile || !title.trim()) return;
-    setStatus("uploading");
     setErrorMsg("");
+
     try {
+      // Step 1: Upload image
+      setStatus("uploading");
       const imageUrl = await upload(selectedFile);
+
+      // Step 2: Mint on-chain
       setStatus("minting");
       await mintNFT({
         title: title.trim(),
         description: description.trim(),
         imageUrl,
       });
+
       setStatus("success");
       toast.success(`"${title}" minted successfully!`);
       setTimeout(() => handleClose(), 1500);
@@ -90,6 +95,14 @@ export default function MintModal({ open, onOpenChange }: MintModalProps) {
   };
 
   const isLoading = status === "uploading" || status === "minting";
+
+  const statusLabel: Record<MintStatus, string> = {
+    idle: "Mint NFT",
+    uploading: `Uploading... ${uploadProgress}%`,
+    minting: "Minting on-chain...",
+    success: "Minted!",
+    error: "Mint NFT",
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -162,7 +175,7 @@ export default function MintModal({ open, onOpenChange }: MintModalProps) {
                       <div className="text-center">
                         <Loader2 className="w-6 h-6 text-primary animate-spin mx-auto mb-2" />
                         <p className="text-xs text-foreground">
-                          Uploading... {uploadProgress}%
+                          {`Uploading... ${uploadProgress}%`}
                         </p>
                       </div>
                     </div>
@@ -209,7 +222,7 @@ export default function MintModal({ open, onOpenChange }: MintModalProps) {
               onChange={(e) => setTitle(e.target.value)}
               placeholder="My awesome NFT"
               disabled={isLoading}
-              data-ocid="mint.title_input"
+              data-ocid="mint.input"
               className="bg-muted border-border rounded-sm focus-visible:ring-primary/50"
             />
           </div>
@@ -228,7 +241,7 @@ export default function MintModal({ open, onOpenChange }: MintModalProps) {
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe your NFT..."
               disabled={isLoading}
-              data-ocid="mint.description_input"
+              data-ocid="mint.textarea"
               rows={3}
               className="bg-muted border-border rounded-sm focus-visible:ring-primary/50 resize-none"
             />
@@ -294,10 +307,10 @@ export default function MintModal({ open, onOpenChange }: MintModalProps) {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {status === "uploading" ? "Uploading image..." : "Minting..."}
+                {statusLabel[status]}
               </>
             ) : (
-              "Mint NFT"
+              statusLabel[status]
             )}
           </Button>
         </div>

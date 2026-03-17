@@ -1,6 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { NFT, UserProfile } from "../backend.d";
+import type {
+  NFT,
+  TransferArg,
+  UserProfile,
+  backendInterface,
+} from "../backend.d";
 import { useActor } from "./useActor";
+
+// Cast actor to full interface including new ICRC-7 methods
+function fullActor(actor: ReturnType<typeof useActor>["actor"]) {
+  return actor as (backendInterface & typeof actor) | null;
+}
 
 export function useGetCallerUserProfile() {
   const { actor, isFetching: actorFetching } = useActor();
@@ -74,7 +84,7 @@ export function useMintNFT() {
 }
 
 export function useTransferNFT() {
-  const { actor } = useActor();
+  const { actor: rawActor } = useActor();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -85,10 +95,35 @@ export function useTransferNFT() {
       nftId: bigint;
       recipientPrincipal: string;
     }) => {
+      const actor = fullActor(rawActor);
       if (!actor) throw new Error("Actor not available");
       const { Principal } = await import("@icp-sdk/core/principal");
       const principal = Principal.fromText(recipientPrincipal);
-      return actor.transferNFT(nftId, principal);
+      const transferArg: TransferArg = {
+        from_subaccount: null,
+        to: { owner: principal, subaccount: null },
+        token_id: nftId,
+        memo: null,
+        created_at_time: null,
+      };
+      const results = await actor.icrc7_transfer([transferArg]);
+      const result = results[0];
+      if (result && "Err" in result) {
+        const errKey = Object.keys(result.Err)[0];
+        const errVal = (result.Err as any)[errKey];
+        if (errKey === "Unauthorized")
+          throw new Error("You are not authorized to transfer this NFT.");
+        if (errKey === "NonExistingTokenId") throw new Error("NFT not found.");
+        if (errKey === "InvalidRecipient")
+          throw new Error("Invalid recipient principal.");
+        throw new Error(
+          `Transfer failed: ${errKey}${
+            errVal && typeof errVal === "object" && "message" in errVal
+              ? ` - ${errVal.message}`
+              : ""
+          }`,
+        );
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["nfts"] });

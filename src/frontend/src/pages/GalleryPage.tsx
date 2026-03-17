@@ -102,7 +102,7 @@ function NFTCard({
           data-ocid={`nft.transfer_button.${ocidIndex}`}
           className="w-full text-xs border-border hover:border-primary/50 hover:text-primary transition-colors rounded-sm"
         >
-          Transfer
+          Transfer (ICRC-7)
         </Button>
       </div>
     </motion.div>
